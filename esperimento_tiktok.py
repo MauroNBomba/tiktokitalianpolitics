@@ -1,73 +1,63 @@
 
 import streamlit as st
 import pandas as pd
-from io import StringIO
-import datetime
+import os
 
-st.set_page_config(page_title="Esperimento Fiducia Politica e TikTok")
+st.set_page_config(page_title="Esperimento TikTok", layout="centered")
 
-# Carica le assegnazioni video
+st.title("Esperimento sulla fiducia politica")
+st.markdown("**Inserisci il tuo ID personale per accedere al questionario.**\nSe non lo conosci, contatta i responsabili del progetto.")
+
+participant_id = st.text_input("ID partecipante (es. P01, P12...)", max_chars=4)
+
 @st.cache_data
-def load_assignments():
+def load_data():
     return pd.read_csv("Assegnazione_video.csv")
 
-assignments_df = load_assignments()
-
-# Inizializza lo stato della sessione
-if "responses" not in st.session_state:
-    st.session_state.responses = []
-
-st.title("Esperimento: Fiducia e TikTok")
-
-st.markdown("""
-**Benvenuto/a nel questionario.**
-
-Inserisci il tuo **ID personale** per iniziare. Se non lo conosci, contatta i responsabili del progetto.
-""")
-participant_id = st.text_input("ID personale:", max_chars=10)
-
 if participant_id:
-    user_data = assignments_df[assignments_df["participantID"] == participant_id]
+    df = load_data()
+    user_data = df[df["participantID"] == participant_id]
+
     if user_data.empty:
-        st.error("ID non trovato. Verifica di averlo inserito correttamente.")
+        st.error("ID non trovato. Verifica di averlo scritto correttamente.")
     else:
-        st.success("ID riconosciuto. Puoi iniziare.")
+        st.success(f"Benvenuto/a {participant_id}! Ti verranno mostrati 15 video.")
+        st.markdown("---")
+        responses = []
 
-        # Estrae i video e li mostra in loop
-        for i in range(15):
-            video_id_col = f"videoID_{i}"
-            video_url_col = f"videoURL_{i}"
-            video_id = user_data.iloc[0][video_id_col]
-            video_url = user_data.iloc[0][video_url_col]
+        for idx, row in user_data.iterrows():
+            video_id = row["videoID"]
+            video_url = row["videoURL"]
 
-            st.markdown(f"### Video {i+1}")
-            st.markdown(f"[Clicca per guardare il video]({video_url})")
+            st.markdown(f"### Video {video_id}")
+            st.markdown(f"[Guarda il video]({video_url})")
 
-            with st.form(f"form_{i}"):
-                autenticita = st.slider("Quanto ti è sembrato autentico questo video?", 1, 6, 3)
-                affidabilita = st.slider("Quanto ti è sembrato affidabile questo video?", 1, 6, 3)
-                concretezza = st.slider("Quanto ti è sembrato concreto questo video?", 1, 6, 3)
-                competenza = st.slider("Quanto ti è sembrato competente questo video?", 1, 6, 3)
-                submitted = st.form_submit_button("Salva valutazione")
+            with st.form(key=f"form_{idx}"):
+                autenticita = st.slider("Autenticità", 1, 6, key=f"aut_{idx}")
+                affidabilita = st.slider("Affidabilità", 1, 6, key=f"aff_{idx}")
+                concretezza = st.slider("Concretezza", 1, 6, key=f"con_{idx}")
+                competenza = st.slider("Competenza", 1, 6, key=f"com_{idx}")
+                submitted = st.form_submit_button("Salva e continua")
+
                 if submitted:
-                    st.session_state.responses.append({
+                    responses.append({
                         "participantID": participant_id,
                         "videoID": video_id,
                         "videoURL": video_url,
-                        "autenticita": autenticita,
-                        "affidabilita": affidabilita,
+                        "autenticità": autenticita,
+                        "affidabilità": affidabilita,
                         "concretezza": concretezza,
-                        "competenza": competenza,
-                        "timestamp": datetime.datetime.now().isoformat()
+                        "competenza": competenza
                     })
-                    st.success("Valutazione salvata!")
+                    st.success("Risposte salvate per questo video!")
 
-        if st.session_state.responses:
-            df_results = pd.DataFrame(st.session_state.responses)
-            csv = df_results.to_csv(index=False)
-            st.download_button(
-                label="📥 Scarica risposte in CSV",
-                data=csv,
-                file_name=f"risposte_{participant_id}.csv",
-                mime="text/csv"
-            )
+        if responses:
+            result_df = pd.DataFrame(responses)
+            output_file = f"risposte_{participant_id}.csv"
+            output_path = os.path.join("dati", output_file)
+            os.makedirs("dati", exist_ok=True)
+            result_df.to_csv(output_path, index=False)
+            st.success("Tutte le risposte sono state salvate con successo!")
+
+            with open(output_path, "rb") as f:
+                st.download_button("📥 Scarica le tue risposte", f, file_name=output_file, mime="text/csv")
