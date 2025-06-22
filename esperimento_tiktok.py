@@ -18,7 +18,6 @@ worksheet = sheet.sheet1
 
 # Streamlit interfaccia
 st.set_page_config(page_title="Esperimento TikTok", layout="wide")
-
 st.title("Esperimento su TikTok e la fiducia nei politici")
 
 # Admin ID
@@ -30,6 +29,10 @@ output_folder.mkdir(exist_ok=True)
 
 # Carica CSV delle assegnazioni
 assegnazioni = pd.read_csv("Assegnazione_video.csv")
+
+# Normalizza i nomi delle colonne (in caso ci siano spazi o maiuscole)
+assegnazioni.columns = [col.strip().lower() for col in assegnazioni.columns]
+
 id_partecipante = st.text_input("Inserisci il tuo ID partecipante")
 
 if id_partecipante:
@@ -37,16 +40,19 @@ if id_partecipante:
         st.subheader("Interfaccia Admin - Download CSV")
         for file in output_folder.glob("*.csv"):
             st.download_button(label=f"Scarica {file.name}", data=file.read_bytes(), file_name=file.name)
-
-    elif id_partecipante in assegnazioni["participantID"].values:
-        user_data = assegnazioni[assegnazioni["participantID"] == id_partecipante].iloc[0]
+    elif id_partecipante in assegnazioni["participantid"].values:
+        user_data = assegnazioni[assegnazioni["participantid"] == id_partecipante].iloc[0]
         valutazioni = {}
         for i in range(1, 16):
-            video_id = user_data[f"video{i}"]
-            st.video(f"https://www.tiktok.com/@italianpolitics/video/{video_id}")
-            for dim in ["Autenticità", "Affidabilità", "Concretezza", "Competenza"]:
-                key = f"{video_id}_{dim}"
-                valutazioni[key] = st.slider(f"{dim} - Video {i}", 1, 5, 3, key=key)
+            video_col = f"video{i}"
+            if video_col in user_data:
+                video_id = str(user_data[video_col])
+                st.video(f"https://www.tiktok.com/@italianpolitics/video/{video_id}")
+                for dim in ["Autenticità", "Affidabilità", "Concretezza", "Competenza"]:
+                    key = f"{video_id}_{dim}"
+                    valutazioni[key] = st.slider(f"{dim} - Video {i}", 1, 5, 3, key=key)
+            else:
+                st.warning(f"Colonna {video_col} non trovata per il partecipante {id_partecipante}")
 
         if len(valutazioni) == 60:
             if st.button("Invia le risposte"):
