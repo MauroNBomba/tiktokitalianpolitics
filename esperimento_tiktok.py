@@ -1,4 +1,3 @@
-
 import streamlit as st
 import pandas as pd
 from pathlib import Path
@@ -39,8 +38,8 @@ if id_partecipante:
         for file in output_folder.glob("*.csv"):
             st.download_button(label=f"Scarica {file.name}", data=file.read_bytes(), file_name=file.name)
 
-    elif id_partecipante in assegnazioni["PartecipantID"].values:
-        user_data = assegnazioni[assegnazioni["PartecipantID"] == id_partecipante].iloc[0]
+    elif id_partecipante in assegnazioni["participantID"].values:
+        user_data = assegnazioni[assegnazioni["participantID"] == id_partecipante].iloc[0]
         valutazioni = {}
         for i in range(1, 16):
             video_id = user_data[f"video{i}"]
@@ -58,6 +57,5 @@ if id_partecipante:
                 # Salva anche su Google Sheet
                 worksheet.append_row([id_partecipante] + list(valutazioni.values()))
                 st.success("Risposte inviate con successo.")
-
     else:
         st.warning("ID partecipante non valido.")
