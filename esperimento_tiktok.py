@@ -3,72 +3,59 @@ import streamlit as st
 import pandas as pd
 from pathlib import Path
 from datetime import datetime
+import os
+
+# Autenticazione Google Sheet via st.secrets
 import gspread
-from oauth2client.service_account import ServiceAccountCredentials
+from google.oauth2.service_account import Credentials
 
-# Configura accesso Google Sheet
+# Configura accesso Google Sheet da st.secrets
 scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-creds = ServiceAccountCredentials.from_json_keyfile_name("quest-tiktok-2246396a10aa.json", scope)
+creds_dict = st.secrets["gcp_service_account"]
+creds = Credentials.from_service_account_info(creds_dict, scopes=scope)
 client = gspread.authorize(creds)
-sheet = client.open_by_url("https://docs.google.com/spreadsheets/d/1bXQ9t9j5WGD5mtI-9ufmp-t0DjuGuQaBx1LCOE95jX0/edit?usp=sharing").sheet1
+sheet = client.open_by_url("https://docs.google.com/spreadsheets/d/1bXQ9t9j5WGD5mtI-9ufmp-t0DjuGuQaBx1LCOE95jX0/edit?usp=sharing")
+worksheet = sheet.sheet1
 
-# Percorsi
-csv_path = "Assegnazione_video.csv"
+# Streamlit interfaccia
+st.set_page_config(page_title="Esperimento TikTok", layout="wide")
+
+st.title("Esperimento su TikTok e la fiducia nei politici")
+
+# Admin ID
+ADMIN_ID = "MauroNB"
+
+# Cartella per salvataggio backend CSV
 output_folder = Path("dati")
 output_folder.mkdir(exist_ok=True)
 
-# UI
-st.title("Esperimento TikTok e Fiducia Politica")
-participant_id = st.text_input("Inserisci il tuo ID personale per accedere al questionario. Se non lo conosci, contatta i responsabili del progetto.")
-admin_mode = participant_id.strip().upper() == "MAURONB"
+# Carica CSV delle assegnazioni
+assegnazioni = pd.read_csv("Assegnazione_video.csv")
+id_partecipante = st.text_input("Inserisci il tuo ID partecipante")
 
-# Carica assegnazioni
-df = pd.read_csv(csv_path)
-df["participantID"] = df["participantID"].str.upper()
+if id_partecipante:
+    if id_partecipante == ADMIN_ID:
+        st.subheader("Interfaccia Admin - Download CSV")
+        for file in output_folder.glob("*.csv"):
+            st.download_button(label=f"Scarica {file.name}", data=file.read_bytes(), file_name=file.name)
+    elif id_partecipante in assegnazioni["ID"].values:
+        user_data = assegnazioni[assegnazioni["ID"] == id_partecipante].iloc[0]
+        valutazioni = {}
+        for i in range(1, 16):
+            video_id = user_data[f"video{i}"]
+            st.video(f"https://www.tiktok.com/@italianpolitics/video/{video_id}")
+            for dim in ["Autenticità", "Affidabilità", "Concretezza", "Competenza"]:
+                key = f"{video_id}_{dim}"
+                valutazioni[key] = st.slider(f"{dim} - Video {i}", 1, 5, 3, key=key)
 
-if admin_mode:
-    st.header("Interfaccia Admin - Scarica le risposte")
-    files = list(output_folder.glob("risposte_*.csv"))
-    if files:
-        for f in files:
-            st.download_button(f"📥 Scarica {f.name}", f.read_bytes(), file_name=f.name)
+        if len(valutazioni) == 60:
+            if st.button("Invia le risposte"):
+                df = pd.DataFrame([valutazioni])
+                file_path = output_folder / f"risposte_{id_partecipante}.csv"
+                df.to_csv(file_path, index=False)
+
+                # Salva anche su Google Sheet
+                worksheet.append_row([id_partecipante] + list(valutazioni.values()))
+                st.success("Risposte inviate con successo.")
     else:
-        st.info("Nessuna risposta ancora disponibile.")
-elif participant_id:
-    user_data = df[df["participantID"] == participant_id.upper()]
-    if user_data.empty:
-        st.error("ID non valido. Riprova.")
-    else:
-        st.success("Benvenuto! Procedi con la valutazione dei video.")
-        responses = []
-        for idx, row in user_data.iterrows():
-            st.subheader(f"🎬 Video {idx + 1}")
-            st.markdown(f"[Guarda il video]({row['videoURL']})")
-            col1, col2 = st.columns(2)
-            with col1:
-                autenticita = st.slider(f"Autenticità - Video {idx + 1}", 1, 6, key=f"auth{idx}")
-                affidabilita = st.slider(f"Affidabilità - Video {idx + 1}", 1, 6, key=f"aff{idx}")
-            with col2:
-                concretezza = st.slider(f"Concretezza - Video {idx + 1}", 1, 6, key=f"conc{idx}")
-                competenza = st.slider(f"Competenza - Video {idx + 1}", 1, 6, key=f"comp{idx}")
-            responses.append({
-                "participantID": participant_id,
-                "videoID": row["videoID"],
-                "videoURL": row["videoURL"],
-                "autenticita": autenticita,
-                "affidabilita": affidabilita,
-                "concretezza": concretezza,
-                "competenza": competenza
-            })
-
-        if len(responses) == len(user_data):
-            if st.button("📤 Invia le risposte"):
-                df_out = pd.DataFrame(responses)
-                file_path = output_folder / f"risposte_{participant_id.upper()}.csv"
-                df_out.to_csv(file_path, index=False)
-                st.success("✅ Risposte inviate e salvate.")
-
-                # Invio su Google Sheet
-                for row in df_out.values.tolist():
-                    sheet.append_row(row)
-                st.balloons()
+        st.warning("ID partecipante non valido.")
