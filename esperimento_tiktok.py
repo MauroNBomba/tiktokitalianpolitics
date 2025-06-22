@@ -1,3 +1,4 @@
+
 import streamlit as st
 import pandas as pd
 from pathlib import Path
@@ -46,12 +47,13 @@ if participant_id:
             for i, row in user_data.iterrows():
                 st.markdown("---")
                 st.markdown(f"🎥 Video {i + 1 - user_data.index[0]}")
+                st.markdown(f"**ID Video:** `{row['videoID']}`")
                 st.markdown(f"[Guarda il video]({row['videoURL']})")
 
-                aut = st.slider(f"Autenticità (Video {i + 1})", 1, 5, 3, key=f"aut_{i}")
-                aff = st.slider(f"Affidabilità (Video {i + 1})", 1, 5, 3, key=f"aff_{i}")
-                conc = st.slider(f"Concretezza (Video {i + 1})", 1, 5, 3, key=f"conc_{i}")
-                comp = st.slider(f"Competenza (Video {i + 1})", 1, 5, 3, key=f"comp_{i}")
+                aut = st.slider(f"Autenticità (Video {i + 1})", 1, 5, 1, key=f"aut_{i}")
+                aff = st.slider(f"Affidabilità (Video {i + 1})", 1, 5, 1, key=f"aff_{i}")
+                conc = st.slider(f"Concretezza (Video {i + 1})", 1, 5, 1, key=f"conc_{i}")
+                comp = st.slider(f"Competenza (Video {i + 1})", 1, 5, 1, key=f"comp_{i}")
 
                 responses.append({
                     "participantID": participant_id,
