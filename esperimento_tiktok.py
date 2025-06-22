@@ -4,11 +4,34 @@ import streamlit as st
 import pandas as pd
 import os
 from pathlib import Path
+import gspread
+from google.oauth2.service_account import Credentials
+
 
 # Configurazione
 st.set_page_config(page_title="Esperimento TikTok e Fiducia", layout="centered")
 
 st.title("Esperimento TikTok e Fiducia")
+
+
+def upload_to_google_sheet(responses):
+    try:
+        scope = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
+        creds = Credentials.from_service_account_file("quest-tiktok-2246396a10aa.json", scopes=scope)
+        client = gspread.authorize(creds)
+        sheet = client.open_by_url("https://docs.google.com/spreadsheets/d/1bXQ9t9j5WGD5mtI-9ufmp-t0DjuGuQaBx1LCOE95jX0/edit#gid=0").sheet1
+        for r in responses:
+            sheet.append_row([
+                r["participantID"],
+                r["videoID"],
+                r["videoURL"],
+                r["autenticita"],
+                r["affidabilita"],
+                r["concretezza"],
+                r["competenza"]
+            ])
+    except Exception as e:
+        st.error(f"❌ Errore durante il salvataggio su Google Sheet: {e}")
 
 # Caricamento delle assegnazioni
 @st.cache_data
@@ -68,8 +91,15 @@ if participant_id:
 
             if len(responses) == 15:
                 st.markdown("## ✅ Hai completato tutte le valutazioni.")
-                if st.button("📤 Invia le risposte"):
-                    output_folder = Path("dati")
+                
+if st.button("📤 Invia le risposte"):
+    output_folder = Path("dati")
+    output_folder.mkdir(exist_ok=True)
+    output_file = output_folder / f"risposte_{participant_id}.csv"
+    pd.DataFrame(responses).to_csv(output_file, index=False)
+    upload_to_google_sheet(responses)
+    st.success("Le tue risposte sono state salvate con successo. Grazie per aver partecipato!")
+
                     output_folder.mkdir(exist_ok=True)
                     output_file = output_folder / f"risposte_{participant_id}.csv"
                     pd.DataFrame(responses).to_csv(output_file, index=False)
