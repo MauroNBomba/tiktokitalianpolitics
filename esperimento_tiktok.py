@@ -42,8 +42,8 @@ if id_partecipante:
         st.subheader("Interfaccia Admin - Download CSV")
         for file in output_folder.glob("*.csv"):
             st.download_button(label=f"Scarica {file.name}", data=file.read_bytes(), file_name=file.name)
-    elif id_partecipante in assegnazioni["ParticipantID"].values:
-        user_data = assegnazioni[assegnazioni["ParticipantID"] == id_partecipante].iloc[0]
+    elif id_partecipante in assegnazioni["participantID"].values:
+        user_data = assegnazioni[assegnazioni["participantID"] == id_partecipante].iloc[0]
         valutazioni = []
         st.subheader(f"Questionario per {id_partecipante}")
 
