@@ -60,18 +60,26 @@ if participant_id:
 
             # === VIDEO STEP-BY-STEP ===
             i = st.session_state.video_index
-            if i < len(user_data):
+            total = len(user_data)
+            if i < total:
                 row = user_data.iloc[i]
                 st.markdown("---")
-                st.markdown(f"🎥 **Video {i + 1}** — ID: `{row['videoID']}`")
+                col1, col2 = st.columns([0.8, 0.2])
+                with col1:
+                    st.markdown(f"🎥 **Video {i + 1}** — ID: `{row['videoID']}` — *Guarda il video e valuta il suo contenuto in base agli aggettivi:*")
+                with col2:
+                    st.markdown(f"`{i + 1} / {total}`")
+
                 st.markdown(
-                    f'<a href="{row["videoURL"]}" target="_blank">📺 Guarda il video su TikTok</a>',
+                    f'<a href="{row["videoURL"]}" target="_blank">Guarda il video su TikTok</a>',
                     unsafe_allow_html=True
                 )
-                aut = st.slider(f"Autenticità (Video {i + 1})", 1, 5, 1, key=f"aut_{i}")
-                aff = st.slider(f"Affidabilità (Video {i + 1})", 1, 5, 1, key=f"aff_{i}")
-                conc = st.slider(f"Concretezza (Video {i + 1})", 1, 5, 1, key=f"conc_{i}")
-                comp = st.slider(f"Competenza (Video {i + 1})", 1, 5, 1, key=f"comp_{i}")
+
+                aut = st.slider("Autenticità", 1, 5, 1, key=f"aut_{i}")
+                aff = st.slider("Affidabilità", 1, 5, 1, key=f"aff_{i}")
+                conc = st.slider("Concretezza", 1, 5, 1, key=f"conc_{i}")
+                comp = st.slider("Competenza", 1, 5, 1, key=f"comp_{i}")
+
                 if st.button("Avanti"):
                     st.session_state.responses.append({
                         "participantID": participant_id,
@@ -91,7 +99,7 @@ if participant_id:
                     file_path = output_folder / f"risposte_{participant_id}.csv"
                     df_out.to_csv(file_path, index=False)
 
-                    # === Google Sheets: solo ora carichiamo gspread e scriviamo ===
+                    # === Google Sheets (scrittura una tantum) ===
                     import gspread
                     from google.oauth2.service_account import Credentials
                     scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
