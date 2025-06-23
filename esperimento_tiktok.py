@@ -1,21 +1,10 @@
-
 import streamlit as st
 import pandas as pd
 from pathlib import Path
-import gspread
-from google.oauth2.service_account import Credentials
 
 # === CONFIG ===
 st.set_page_config(page_title="Esperimento TikTok", layout="centered")
 st.title("Trusting TikTok Politics")
-
-# === Google Sheets authentication ===
-scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-creds_dict = st.secrets["gcp_service_account"]
-creds = Credentials.from_service_account_info(creds_dict, scopes=scope)
-client = gspread.authorize(creds)
-sheet = client.open_by_url("https://docs.google.com/spreadsheets/d/1bXQ9t9j5WGD5mtI-9ufmp-t0DjuGuQaBx1LCOE95jX0/edit?usp=sharing")
-worksheet = sheet.sheet1
 
 # === LOAD CSV ===
 @st.cache_data
@@ -102,6 +91,16 @@ if participant_id:
                     file_path = output_folder / f"risposte_{participant_id}.csv"
                     df_out.to_csv(file_path, index=False)
 
+                    # === Google Sheets: solo ora carichiamo gspread e scriviamo ===
+                    import gspread
+                    from google.oauth2.service_account import Credentials
+                    scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
+                    creds_dict = st.secrets["gcp_service_account"]
+                    creds = Credentials.from_service_account_info(creds_dict, scopes=scope)
+                    client = gspread.authorize(creds)
+                    sheet = client.open_by_url("https://docs.google.com/spreadsheets/d/1bXQ9t9j5WGD5mtI-9ufmp-t0DjuGuQaBx1LCOE95jX0/edit?usp=sharing")
+                    worksheet = sheet.sheet1
+
                     values = [[
                         row["participantID"],
                         row["videoID"],
@@ -112,4 +111,5 @@ if participant_id:
                         row["Competenza"]
                     ] for row in st.session_state.responses]
                     worksheet.append_rows(values)
+
                     st.success("Le tue risposte sono state salvate con successo. Grazie per aver partecipato!")
