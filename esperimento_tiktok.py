@@ -1,4 +1,3 @@
-
 import streamlit as st
 import pandas as pd
 from pathlib import Path
@@ -46,8 +45,13 @@ if participant_id:
 
             for i, row in user_data.iterrows():
                 st.markdown("---")
-                st.markdown(f"🎥 Video {i + 1 - user_data.index[0]} — ID: `{row['videoID']}`")
-                st.video(row["videoURL"])
+                st.markdown(f"🎥 **Video {i + 1 - user_data.index[0]}** — ID: `{row['videoID']}`")
+
+                # Collegamento al video TikTok
+                st.markdown(
+                    f'<a href="{row["videoURL"]}" target="_blank">📺 Guarda il video su TikTok</a>',
+                    unsafe_allow_html=True
+                )
 
                 aut = st.slider(f"Autenticità (Video {i + 1})", 1, 5, 1, key=f"aut_{i}")
                 aff = st.slider(f"Affidabilità (Video {i + 1})", 1, 5, 1, key=f"aff_{i}")
