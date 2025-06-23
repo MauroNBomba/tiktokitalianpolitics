@@ -1,3 +1,4 @@
+
 import streamlit as st
 import pandas as pd
 from pathlib import Path
@@ -47,14 +48,21 @@ if participant_id:
                 st.markdown("---")
                 st.markdown(f"🎥 **Video {i + 1 - user_data.index[0]}** — ID: `{row['videoID']}`")
 
-                # Prova anteprima embed da TikTok (usando iframe)
-                embed_html = f"""
-                    <iframe src="https://www.tiktok.com/embed/v2/{row['videoID']}" 
-                            height="600" width="325" frameborder="0" 
-                            allow="autoplay; encrypted-media" allowfullscreen>
-                    </iframe>
-                """
-                st.components.v1.html(embed_html, height=650)
+                # Collegamento cliccabile + anteprima immagine
+                try:
+                    username = row["videoURL"].split("/")[3]
+                    video_id = row["videoID"]
+                    preview_link = f"https://www.tiktok.com/@{username}/video/{video_id}"
+                    preview_img = f"{preview_link}/thumbnail.jpg"
+
+                    html = f"""
+                    <a href="{preview_link}" target="_blank">
+                      <img src="{preview_img}" alt="Anteprima video" width="325">
+                    </a>
+                    """
+                    st.components.v1.html(html, height=360)
+                except:
+                    st.markdown(f"[Guarda il video su TikTok]({row['videoURL']})")
 
                 aut = st.slider(f"Autenticità (Video {i + 1})", 1, 5, 1, key=f"aut_{i}")
                 aff = st.slider(f"Affidabilità (Video {i + 1})", 1, 5, 1, key=f"aff_{i}")
