@@ -47,11 +47,14 @@ if participant_id:
                 st.markdown("---")
                 st.markdown(f"🎥 **Video {i + 1 - user_data.index[0]}** — ID: `{row['videoID']}`")
 
-                # Collegamento al video TikTok
-                st.markdown(
-                    f'<a href="{row["videoURL"]}" target="_blank">📺 Guarda il video su TikTok</a>',
-                    unsafe_allow_html=True
-                )
+                # Prova anteprima embed da TikTok (usando iframe)
+                embed_html = f"""
+                    <iframe src="https://www.tiktok.com/embed/v2/{row['videoID']}" 
+                            height="600" width="325" frameborder="0" 
+                            allow="autoplay; encrypted-media" allowfullscreen>
+                    </iframe>
+                """
+                st.components.v1.html(embed_html, height=650)
 
                 aut = st.slider(f"Autenticità (Video {i + 1})", 1, 5, 1, key=f"aut_{i}")
                 aff = st.slider(f"Affidabilità (Video {i + 1})", 1, 5, 1, key=f"aff_{i}")
