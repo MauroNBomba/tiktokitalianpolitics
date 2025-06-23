@@ -1,4 +1,3 @@
-
 import streamlit as st
 import pandas as pd
 from pathlib import Path
@@ -7,7 +6,7 @@ from google.oauth2.service_account import Credentials
 
 # === CONFIG ===
 st.set_page_config(page_title="Esperimento TikTok", layout="centered")
-st.title("Esperimento su TikTok e la fiducia nei politici")
+st.title("Trusting TikTok Politics")
 
 # === Google Sheets authentication ===
 scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
@@ -48,21 +47,11 @@ if participant_id:
                 st.markdown("---")
                 st.markdown(f"🎥 **Video {i + 1 - user_data.index[0]}** — ID: `{row['videoID']}`")
 
-                # Collegamento cliccabile + anteprima immagine
-                try:
-                    username = row["videoURL"].split("/")[3]
-                    video_id = row["videoID"]
-                    preview_link = f"https://www.tiktok.com/@{username}/video/{video_id}"
-                    preview_img = f"{preview_link}/thumbnail.jpg"
-
-                    html = f"""
-                    <a href="{preview_link}" target="_blank">
-                      <img src="{preview_img}" alt="Anteprima video" width="325">
-                    </a>
-                    """
-                    st.components.v1.html(html, height=360)
-                except:
-                    st.markdown(f"[Guarda il video su TikTok]({row['videoURL']})")
+                # Collegamento al video TikTok
+                st.markdown(
+                    f'<a href="{row["videoURL"]}" target="_blank">📺 Guarda il video su TikTok</a>',
+                    unsafe_allow_html=True
+                )
 
                 aut = st.slider(f"Autenticità (Video {i + 1})", 1, 5, 1, key=f"aut_{i}")
                 aff = st.slider(f"Affidabilità (Video {i + 1})", 1, 5, 1, key=f"aff_{i}")
