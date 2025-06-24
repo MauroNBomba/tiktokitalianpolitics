@@ -1,7 +1,8 @@
 import streamlit as st
 import pandas as pd
 from pathlib import Path
-import streamlit.components.v1 as components
+import tempfile
+import requests
 from googleapiclient.discovery import build
 from google.oauth2.service_account import Credentials
 
@@ -10,7 +11,7 @@ st.set_page_config(page_title="Esperimento TikTok", layout="centered")
 st.title("Trusting TikTok Politics")
 
 # === SETUP GOOGLE DRIVE API ===
-drive_scope = ["https://www.googleapis.com/auth/drive"]
+drive_scope = ["https://www.googleapis.com/auth/drive.readonly"]
 creds_dict = st.secrets["gcp_service_account"]
 creds = Credentials.from_service_account_info(creds_dict, scopes=drive_scope)
 drive_service = build("drive", "v3", credentials=creds)
@@ -25,6 +26,20 @@ def get_drive_file_map(folder_id="1Rbddx5biD9ZqOezDVb3csxV7tSMIfgn7"):
     ).execute()
     items = results.get("files", [])
     return {file["name"]: file["id"] for file in items}
+
+# === FUNZIONE: Scarica video da Google Drive e salva in cache temporanea ===
+@st.cache_data(show_spinner=False)
+def download_video_from_drive(file_id):
+    headers = {"Authorization": f"Bearer {creds.token}"}
+    url = f"https://www.googleapis.com/drive/v3/files/{file_id}?alt=media"
+    response = requests.get(url, headers=headers)
+    if response.status_code == 200:
+        tmp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".mp4")
+        tmp_file.write(response.content)
+        tmp_file.flush()
+        return tmp_file.name
+    else:
+        raise RuntimeError(f"Errore nel download: {response.status_code}")
 
 # === CARICAMENTO CSV ===
 @st.cache_data
@@ -92,12 +107,13 @@ if participant_id:
                 with col2:
                     st.markdown(f"`{i + 1} / {total}`")
 
-                # === EMBED GOOGLE DRIVE VIDEO ===
                 video_filename = f"{row['videoID'].strip()}.mp4"
                 if video_filename in file_map:
-                    video_id = file_map[video_filename]
-                    video_embed_url = f"https://drive.google.com/file/d/{video_id}/preview"
-                    components.iframe(video_embed_url, height=360)
+                    try:
+                        video_path = download_video_from_drive(file_map[video_filename])
+                        st.video(video_path)
+                    except Exception as e:
+                        st.warning(f"Errore nel caricamento del video: {e}")
                 else:
                     st.warning(f"⚠️ Video `{video_filename}` non trovato su Drive.")
 
@@ -110,7 +126,7 @@ if participant_id:
                     st.session_state.responses.append({
                         "participantID": participant_id,
                         "videoID": row["videoID"],
-                        "videoURL": row.get("videoURL", ""),  # se presente nel CSV
+                        "videoURL": row.get("videoURL", ""),
                         "Autenticità": aut,
                         "Affidabilità": aff,
                         "Concretezza": conc,
