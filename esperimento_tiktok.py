@@ -5,6 +5,7 @@ import tempfile
 import requests
 from googleapiclient.discovery import build
 from google.oauth2.service_account import Credentials
+import google.auth.transport.requests  # 👈 necessario per il refresh del token
 
 # === CONFIG ===
 st.set_page_config(page_title="Esperimento TikTok", layout="centered")
@@ -30,6 +31,9 @@ def get_drive_file_map(folder_id="1Rbddx5biD9ZqOezDVb3csxV7tSMIfgn7"):
 # === FUNZIONE: Scarica video da Google Drive e salva in cache temporanea ===
 @st.cache_data(show_spinner=False)
 def download_video_from_drive(file_id):
+    # 🔁 Rinfresca il token
+    auth_req = google.auth.transport.requests.Request()
+    creds.refresh(auth_req)
     headers = {"Authorization": f"Bearer {creds.token}"}
     url = f"https://www.googleapis.com/drive/v3/files/{file_id}?alt=media"
     response = requests.get(url, headers=headers)
