@@ -1,12 +1,32 @@
 import streamlit as st
 import pandas as pd
 from pathlib import Path
+import streamlit.components.v1 as components
+from googleapiclient.discovery import build
+from google.oauth2.service_account import Credentials
 
 # === CONFIG ===
 st.set_page_config(page_title="Esperimento TikTok", layout="centered")
 st.title("Trusting TikTok Politics")
 
-# === LOAD CSV ===
+# === SETUP GOOGLE DRIVE API ===
+drive_scope = ["https://www.googleapis.com/auth/drive"]
+creds_dict = st.secrets["gcp_service_account"]
+creds = Credentials.from_service_account_info(creds_dict, scopes=drive_scope)
+drive_service = build("drive", "v3", credentials=creds)
+
+# === FUNZIONE: Mappa filename -> file ID da Google Drive ===
+@st.cache_data
+def get_drive_file_map(folder_id="1Rbddx5biD9ZqOezDVb3csxV7tSMIfgn7"):
+    results = drive_service.files().list(
+        q=f"'{folder_id}' in parents and mimeType contains 'video/'",
+        fields="files(id, name)",
+        pageSize=1000
+    ).execute()
+    items = results.get("files", [])
+    return {file["name"]: file["id"] for file in items}
+
+# === CARICAMENTO CSV ===
 @st.cache_data
 def load_assignments():
     return pd.read_csv("Assegnazione_video.csv")
@@ -19,6 +39,7 @@ ADMIN_ID = "MauroNB"
 output_folder = Path("dati")
 output_folder.mkdir(exist_ok=True)
 
+# === LOGICA ===
 if participant_id:
     if participant_id == ADMIN_ID:
         st.header("🎛️ Interfaccia Amministratore")
@@ -30,7 +51,6 @@ if participant_id:
         if user_data.empty:
             st.error("ID non trovato. Verifica di averlo inserito correttamente.")
         else:
-            # === SESSION STATE INITIALIZATION ===
             if "intro_shown" not in st.session_state:
                 st.session_state.intro_shown = False
             if "video_index" not in st.session_state:
@@ -38,7 +58,7 @@ if participant_id:
             if "responses" not in st.session_state:
                 st.session_state.responses = []
 
-            # === INTRO PAGE ===
+            # === INTRO ===
             if not st.session_state.intro_shown:
                 st.subheader("Ciao!")
                 st.markdown("""
@@ -58,9 +78,11 @@ if participant_id:
                     st.session_state.intro_shown = True
                 st.stop()
 
-            # === VIDEO STEP-BY-STEP ===
+            # === VIDEO ===
             i = st.session_state.video_index
             total = len(user_data)
+            file_map = get_drive_file_map()
+
             if i < total:
                 row = user_data.iloc[i]
                 st.markdown("---")
@@ -70,10 +92,14 @@ if participant_id:
                 with col2:
                     st.markdown(f"`{i + 1} / {total}`")
 
-                st.markdown(
-                    f'<a href="{row["videoURL"]}" target="_blank">Guarda il video su TikTok</a>',
-                    unsafe_allow_html=True
-                )
+                # === EMBED GOOGLE DRIVE VIDEO ===
+                video_filename = f"V{int(row['videoID']):03d}.mp4"
+                if video_filename in file_map:
+                    video_id = file_map[video_filename]
+                    video_embed_url = f"https://drive.google.com/file/d/{video_id}/preview"
+                    components.iframe(video_embed_url, height=360)
+                else:
+                    st.warning(f"⚠️ Video `{video_filename}` non trovato su Drive.")
 
                 aut = st.slider("Autenticità", 1, 5, 1, key=f"aut_{i}")
                 aff = st.slider("Affidabilità", 1, 5, 1, key=f"aff_{i}")
@@ -84,7 +110,7 @@ if participant_id:
                     st.session_state.responses.append({
                         "participantID": participant_id,
                         "videoID": row["videoID"],
-                        "videoURL": row["videoURL"],
+                        "videoURL": row.get("videoURL", ""),  # se presente nel CSV
                         "Autenticità": aut,
                         "Affidabilità": aff,
                         "Concretezza": conc,
@@ -99,12 +125,10 @@ if participant_id:
                     file_path = output_folder / f"risposte_{participant_id}.csv"
                     df_out.to_csv(file_path, index=False)
 
-                    # === Google Sheets (scrittura una tantum) ===
+                    # === SALVA SU GOOGLE SHEETS ===
                     import gspread
-                    from google.oauth2.service_account import Credentials
-                    scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-                    creds_dict = st.secrets["gcp_service_account"]
-                    creds = Credentials.from_service_account_info(creds_dict, scopes=scope)
+                    sheet_scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
+                    creds = Credentials.from_service_account_info(creds_dict, scopes=sheet_scope)
                     client = gspread.authorize(creds)
                     sheet = client.open_by_url("https://docs.google.com/spreadsheets/d/1bXQ9t9j5WGD5mtI-9ufmp-t0DjuGuQaBx1LCOE95jX0/edit?usp=sharing")
                     worksheet = sheet.sheet1
@@ -112,12 +136,11 @@ if participant_id:
                     values = [[
                         row["participantID"],
                         row["videoID"],
-                        row["videoURL"],
+                        row.get("videoURL", ""),
                         row["Autenticità"],
                         row["Affidabilità"],
                         row["Concretezza"],
                         row["Competenza"]
                     ] for row in st.session_state.responses]
                     worksheet.append_rows(values)
-
                     st.success("Le tue risposte sono state salvate con successo. Grazie per aver partecipato!")
