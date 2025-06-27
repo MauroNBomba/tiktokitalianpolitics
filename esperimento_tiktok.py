@@ -48,7 +48,7 @@ def download_video_from_drive(file_id):
 # === CARICAMENTO CSV ===
 @st.cache_data
 def load_assignments():
-    return pd.read_csv("Assegnazione_video.csv")
+    return pd.read_csv("Assegnazione_video_100.csv")
 
 df = load_assignments()
 participant_id = st.text_input("Inserisci il tuo ID partecipante")
@@ -121,17 +121,17 @@ if participant_id:
                 else:
                     st.warning(f"⚠️ Video `{video_filename}` non trovato su Drive.")
 
-                aut = st.slider("Autenticità", 1, 5, 1, key=f"aut_{i}")
-                aff = st.slider("Affidabilità", 1, 5, 1, key=f"aff_{i}")
-                conc = st.slider("Concretezza", 1, 5, 1, key=f"conc_{i}")
-                comp = st.slider("Competenza", 1, 5, 1, key=f"comp_{i}")
+                acc = st.slider("Il video è accurato nei contenuti (fornisce informazioni/dichiarazioni chiare e precise)", 1, 5, 1, key=f"aut_{i}")
+                aff = st.slider("Quanto ritieni affidabile ciò che viene detto/rappresentato nel video", 1, 5, 1, key=f"aff_{i}")
+                conc = st.slider("Nel video, Il/i protagonista/i (o i contenuti) appaiono autorevoli e competenti", 1, 5, 1, key=f"conc_{i}")
+                comp = st.slider("Nel video, Il/i protagonista/i (o i contenuti) appaiono spontanei e naturali", 1, 5, 1, key=f"comp_{i}")
 
                 if st.button("Avanti"):
                     st.session_state.responses.append({
                         "participantID": participant_id,
                         "videoID": row["videoID"],
                         "videoURL": row.get("videoURL", ""),
-                        "Autenticità": aut,
+                        "Accuratezza": acc,
                         "Affidabilità": aff,
                         "Concretezza": conc,
                         "Competenza": comp
@@ -157,7 +157,7 @@ if participant_id:
                         row["participantID"],
                         row["videoID"],
                         row.get("videoURL", ""),
-                        row["Autenticità"],
+                        row["Accuratezza"],
                         row["Affidabilità"],
                         row["Concretezza"],
                         row["Competenza"]
