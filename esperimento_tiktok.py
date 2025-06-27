@@ -275,43 +275,42 @@ if participant_id:
                         st.session_state.video_index += 1
                         st.rerun()
 
-            else:
-                st.markdown("## ✅ Hai completato tutte le valutazioni.")
-                political_options = [
-                    "Destra",
-                    "Centrodestra",
-                    "Centro",
-                    "Centrosinistra",
-                    "Sinistra",
-                    "Non collocato/Preferisco non rispondere"
-                ]
-                political_choice = st.radio("Come ti collochi politicamente?", political_options)
+          else:
+    st.markdown("## ✅ Hai completato tutte le valutazioni.")
+    political_options = [
+        "Destra",
+        "Centrodestra",
+        "Centro",
+        "Centrosinistra",
+        "Sinistra",
+        "Non collocato/Preferisco non rispondere"
+    ]
+    political_choice = st.radio("Come ti collochi politicamente?", political_options)
 
-                if st.button("📤 Invia le risposte"):
-                    df_out = pd.DataFrame(st.session_state.responses)
-                    df_out["CollocazionePolitica"] = political_choice
-                    file_path = output_folder / f"risposte_{participant_id}.csv"
-                    df_out.to_csv(file_path, index=False)
+    if st.button("📤 Invia le risposte"):
+        df_out = pd.DataFrame(st.session_state.responses)
+        df_out["CollocazionePolitica"] = political_choice
+        file_path = output_folder / f"risposte_{participant_id}.csv"
+        df_out.to_csv(file_path, index=False)
 
-                    # === SALVA SU GOOGLE SHEETS ===
-                    import gspread
-                    sheet_scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-                    creds = Credentials.from_service_account_info(creds_dict, scopes=sheet_scope)
-                    client = gspread.authorize(creds)
-                    sheet = client.open_by_url("https://docs.google.com/spreadsheets/d/1bXQ9t9j5WGD5mtI-9ufmp-t0DjuGuQaBx1LCOE95jX0/edit?usp=sharing")
-                    worksheet = sheet.sheet1
+        # === SALVA SU GOOGLE SHEETS ===
+        import gspread
+        sheet_scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
+        creds = Credentials.from_service_account_info(creds_dict, scopes=sheet_scope)
+        client = gspread.authorize(creds)
+        sheet = client.open_by_url("https://docs.google.com/spreadsheets/d/1bXQ9t9j5WGD5mtI-9ufmp-t0DjuGuQaBx1LCOE95jX0/edit?usp=sharing")
+        worksheet = sheet.sheet1
 
-                    values = [[
-                        row["participantID"],
-                        row["videoID"],
-                        row.get("videoURL", ""),
-                        row["Accuratezza"],
-                        row["Affidabilità"],
-                        row["Autorevolezza"],
-                        row["Naturalezza"],
-                        row["Tecnica"],
-                        political_choice
-                    ] for row in st.session_state.responses]
-                    worksheet.append_rows(values)
-                    st.success("Le tue risposte sono state salvate con successo. Grazie per aver partecipato!")
-
+        values = [[
+            row["participantID"],
+            row["videoID"],
+            row.get("videoURL", ""),
+            row["Accuratezza"],
+            row["Affidabilità"],
+            row["Autorevolezza"],
+            row["Naturalezza"],
+            row["Tecnica"],
+            political_choice
+        ] for row in st.session_state.responses]
+        worksheet.append_rows(values)
+        st.success("Le tue risposte sono state salvate con successo. Grazie per aver partecipato!")
