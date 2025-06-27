@@ -123,8 +123,8 @@ if participant_id:
 
                 acc = st.slider("Il video è accurato nei contenuti (fornisce informazioni/dichiarazioni chiare e precise)", 1, 5, 1, key=f"aut_{i}")
                 aff = st.slider("Quanto ritieni affidabile ciò che viene detto/rappresentato nel video", 1, 5, 1, key=f"aff_{i}")
-                aut = st.slider("Nel video, Il/i protagonista/i (o i contenuti) appaiono autorevoli e competenti", 1, 5, 1, key=f"conc_{i}")
-                comp = st.slider("Nel video, Il/i protagonista/i (o i contenuti) appaiono spontanei e naturali", 1, 5, 1, key=f"comp_{i}")
+                aut = st.slider("Nel video, il/la protagonista/i o la fonte (se non c’è un/a protagonista evidente) appaiono autorevoli e competenti", 1, 5, 1, key=f"conc_{i}")
+                comp = st.slider("Nel video, il/la protagonista appaiono spontanei e naturali/Il contenuto è autentico e genuino (se non c'è un/a protagonista evidente", 1, 5, 1, key=f"comp_{i}")
 
                 if st.button("Avanti"):
                     st.session_state.responses.append({
