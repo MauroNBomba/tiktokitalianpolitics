@@ -59,7 +59,7 @@ if participant_id:
         st.header("🎛️ Interfaccia Amministratore")
         for file in output_folder.glob("*.csv"):
             with open(file, "rb") as f:
-                st.download_button(f"📥 Scarica {file.name}", f.read(), file_name=file.name)
+                st.download_button(f" Scarica {file.name}", f.read(), file_name=file.name)
     else:
         user_data = df[df["participantID"] == participant_id]
         if user_data.empty:
@@ -112,7 +112,7 @@ if participant_id:
                     except Exception as e:
                         st.warning(f"Errore nel caricamento del video: {e}")
                 else:
-                    st.warning(f"⚠️ Video `{video_filename}` non trovato su Drive.")
+                    st.warning(f" Video `{video_filename}` non trovato su Drive.")
 
                 acc = st.slider("Il video è accurato nei contenuti (fornisce informazioni/dichiarazioni chiare e precise)", 1, 5, 1, key=f"acc_{i}")
                 aff = st.slider("Ritengo affidabile ciò che viene detto/rappresentato nel video", 1, 5, 1, key=f"aff_{i}")
@@ -122,12 +122,12 @@ if participant_id:
 
                 colA, colB = st.columns([0.3, 0.7])
                 with colA:
-                    if i > 0 and st.button("⬅️ Indietro"):
+                    if i > 0 and st.button(" Indietro"):
                         st.session_state.video_index -= 1
                         st.session_state.responses.pop()
                         st.rerun()
                 with colB:
-                    if st.button("Avanti ➡️"):
+                    if st.button("Avanti "):
                         risposta = {
                             "participantID": participant_id,
                             "videoID": row["videoID"],
@@ -156,7 +156,7 @@ if participant_id:
                 ]
                 political_choice = st.radio("Come ti collochi politicamente?", political_options)
 
-                if st.button("📤 Invia le risposte"):
+                if st.button(" Invia le risposte"):
                     df_out = pd.DataFrame(st.session_state.responses)
                     df_out["CollocazionePolitica"] = political_choice
                     file_path = output_folder / f"risposte_{participant_id}.csv"
