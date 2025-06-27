@@ -31,7 +31,6 @@ def get_drive_file_map(folder_id="1Rbddx5biD9ZqOezDVb3csxV7tSMIfgn7"):
 # === FUNZIONE: Scarica video da Google Drive e salva in cache temporanea ===
 @st.cache_data(show_spinner=False)
 def download_video_from_drive(file_id):
-    # 🔁 Rinfresca il token
     auth_req = google.auth.transport.requests.Request()
     creds.refresh(auth_req)
     headers = {"Authorization": f"Bearer {creds.token}"}
@@ -97,7 +96,7 @@ if participant_id:
                     st.session_state.intro_shown = True
                 st.stop()
 
-            # === VIDEO ===
+            # === VIDEO LOOP ===
             i = st.session_state.video_index
             total = len(user_data)
             file_map = get_drive_file_map()
@@ -107,7 +106,7 @@ if participant_id:
                 st.markdown("---")
                 col1, col2 = st.columns([0.8, 0.2])
                 with col1:
-                    st.markdown(f"🎥 **Video {i + 1}** — ID: `{row['videoID']}` — *Guarda il video e valuta il suo contenuto in base agli aggettivi:*")
+                    st.markdown(f"🎥 **Video {i + 1}** — ID: `{row['videoID']}` — *Guarda il video e valuta il suo contenuto:*")
                 with col2:
                     st.markdown(f"`{i + 1} / {total}`")
 
@@ -121,10 +120,11 @@ if participant_id:
                 else:
                     st.warning(f"⚠️ Video `{video_filename}` non trovato su Drive.")
 
-                acc = st.slider("Il video è accurato nei contenuti (fornisce informazioni/dichiarazioni chiare e precise)", 1, 5, 1, key=f"aut_{i}")
+                acc = st.slider("Il video è accurato nei contenuti (fornisce informazioni/dichiarazioni chiare e precise)", 1, 5, 1, key=f"acc_{i}")
                 aff = st.slider("Quanto ritieni affidabile ciò che viene detto/rappresentato nel video", 1, 5, 1, key=f"aff_{i}")
-                aut = st.slider("Nel video, il/la protagonista/i o la fonte (se non c’è un/a protagonista evidente) appaiono autorevoli e competenti", 1, 5, 1, key=f"conc_{i}")
-                comp = st.slider("Nel video, il/la protagonista appaiono spontanei e naturali/Il contenuto è autentico e genuino (se non c'è un/a protagonista evidente", 1, 5, 1, key=f"comp_{i}")
+                aut = st.slider("Nel video, il/la protagonista/i o la fonte (se non c’è un/a protagonista evidente) appaiono autorevoli e competenti", 1, 5, 1, key=f"aut_{i}")
+                comp = st.slider("Nel video, il/la protagonista appaiono spontanei e naturali/Il contenuto è autentico e genuino (se non c'è un/a protagonista evidente)", 1, 5, 1, key=f"comp_{i}")
+                tec = st.slider("Il video è tecnicamente ben realizzato e adeguato al contesto di TikTok", 1, 5, 1, key=f"tec_{i}")
 
                 if st.button("Avanti"):
                     st.session_state.responses.append({
@@ -134,14 +134,28 @@ if participant_id:
                         "Accuratezza": acc,
                         "Affidabilità": aff,
                         "Autorevolezza": aut,
-                        "Competenza": comp
+                        "Competenza": comp,
+                        "Tecnica": tec
                     })
                     st.session_state.video_index += 1
                     st.rerun()
+
             else:
                 st.markdown("## ✅ Hai completato tutte le valutazioni.")
+                st.subheader("📊 Una ultima domanda")
+                political_options = [
+                    "Destra",
+                    "Centrodestra",
+                    "Centro",
+                    "Centrosinistra",
+                    "Sinistra",
+                    "Non collocato/Preferisco non rispondere"
+                ]
+                political_choice = st.radio("Come ti collochi politicamente?", political_options)
+
                 if st.button("📤 Invia le risposte"):
                     df_out = pd.DataFrame(st.session_state.responses)
+                    df_out["CollocazionePolitica"] = political_choice
                     file_path = output_folder / f"risposte_{participant_id}.csv"
                     df_out.to_csv(file_path, index=False)
 
@@ -160,7 +174,9 @@ if participant_id:
                         row["Accuratezza"],
                         row["Affidabilità"],
                         row["Autorevolezza"],
-                        row["Competenza"]
+                        row["Competenza"],
+                        row["Tecnica"],
+                        political_choice
                     ] for row in st.session_state.responses]
                     worksheet.append_rows(values)
                     st.success("Le tue risposte sono state salvate con successo. Grazie per aver partecipato!")
