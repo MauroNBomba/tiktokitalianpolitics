@@ -142,7 +142,6 @@ if participant_id:
 
             else:
                 st.markdown("## ✅ Hai completato tutte le valutazioni.")
-                st.subheader("📊 Una ultima domanda")
                 political_options = [
                     "Destra",
                     "Centrodestra",
