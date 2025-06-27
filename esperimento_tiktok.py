@@ -121,10 +121,10 @@ if participant_id:
                     st.warning(f"⚠️ Video `{video_filename}` non trovato su Drive.")
 
                 acc = st.slider("Il video è accurato nei contenuti (fornisce informazioni/dichiarazioni chiare e precise)", 1, 5, 1, key=f"acc_{i}")
-                aff = st.slider("Quanto ritieni affidabile ciò che viene detto/rappresentato nel video", 1, 5, 1, key=f"aff_{i}")
-                aut = st.slider("Nel video, il/la protagonista/i o la fonte (se non c’è un/a protagonista evidente) appaiono autorevoli e competenti", 1, 5, 1, key=f"aut_{i}")
+                aff = st.slider("Ritengo affidabile ciò che viene detto/rappresentato nel video", 1, 5, 1, key=f"aff_{i}")
+                aut = st.slider("Nel video, il/la protagonista o la fonte (se non c’è un/a protagonista evidente) appaiono autorevoli e competenti", 1, 5, 1, key=f"aut_{i}")
                 comp = st.slider("Nel video, il/la protagonista appaiono spontanei e naturali/Il contenuto è autentico e genuino (se non c'è un/a protagonista evidente)", 1, 5, 1, key=f"comp_{i}")
-                tec = st.slider("Il video è tecnicamente ben realizzato e adeguato al contesto di TikTok", 1, 5, 1, key=f"tec_{i}")
+                tec = st.slider("Il video è tecnicamente ben realizzato e adeguato al contesto social (buon uso del montaggio, contenuti interessanti)", 1, 5, 1, key=f"tec_{i}")
 
                 if st.button("Avanti"):
                     st.session_state.responses.append({
