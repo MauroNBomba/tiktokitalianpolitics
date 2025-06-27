@@ -84,8 +84,8 @@ if participant_id:
                 Stiamo lavorando ad un progetto che vuole studiare come i meccanismi di fiducia e sfiducia nella politica
                 si legano ad alcune caratteristiche dei messaggi politici.
 
-                Vedrai 15 video tra quelli che i politici italiani hanno postato su TikTok durante la campagna elettorale per le Elezioni Europee del 2024.
-                Ti chiediamo di giudicarli in base a quattro aggettivi, per ciascuno di questi puoi esprimere un giudizio da 1 a 5 in base a quanto lo ritieni adatto a descrivere il video.
+                Vedrai 10 video tra quelli che i politici italiani hanno postato su TikTok durante la campagna elettorale per le Elezioni Europee del 2024. 
+                Ti chiediamo di giudicarli in base ad alcune caratteristiche, per ciascuna puoi esprimere un giudizio da 1 a 5 in base alle tue percezioni. I video sono selezionati in maniera totalmente casuale. 
 
                 Sappiamo che è difficile, ma ti chiediamo di mettere da parte (solo per questa volta) il tuo giudizio politico, le tue idee, e le tue simpatie.
                 Giudica esclusivamente il contenuto del video. È molto importante per noi.
@@ -123,7 +123,7 @@ if participant_id:
 
                 acc = st.slider("Il video è accurato nei contenuti (fornisce informazioni/dichiarazioni chiare e precise)", 1, 5, 1, key=f"aut_{i}")
                 aff = st.slider("Quanto ritieni affidabile ciò che viene detto/rappresentato nel video", 1, 5, 1, key=f"aff_{i}")
-                conc = st.slider("Nel video, Il/i protagonista/i (o i contenuti) appaiono autorevoli e competenti", 1, 5, 1, key=f"conc_{i}")
+                aut = st.slider("Nel video, Il/i protagonista/i (o i contenuti) appaiono autorevoli e competenti", 1, 5, 1, key=f"conc_{i}")
                 comp = st.slider("Nel video, Il/i protagonista/i (o i contenuti) appaiono spontanei e naturali", 1, 5, 1, key=f"comp_{i}")
 
                 if st.button("Avanti"):
@@ -133,7 +133,7 @@ if participant_id:
                         "videoURL": row.get("videoURL", ""),
                         "Accuratezza": acc,
                         "Affidabilità": aff,
-                        "Concretezza": conc,
+                        "Autorevolezza": aut,
                         "Competenza": comp
                     })
                     st.session_state.video_index += 1
@@ -159,7 +159,7 @@ if participant_id:
                         row.get("videoURL", ""),
                         row["Accuratezza"],
                         row["Affidabilità"],
-                        row["Concretezza"],
+                        row["Autorevolezza"],
                         row["Competenza"]
                     ] for row in st.session_state.responses]
                     worksheet.append_rows(values)
