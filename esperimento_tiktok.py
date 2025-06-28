@@ -75,17 +75,16 @@ if participant_id:
             if not st.session_state.intro_shown:
                 st.subheader("Ciao!")
                 st.markdown("""
-                Stiamo lavorando ad un progetto che vuole studiare come i meccanismi di fiducia e sfiducia nella politica
-                si legano ad alcune caratteristiche dei messaggi politici.
+                Stiamo lavorando ad un progetto che vuole approfondire come i meccanismi di fiducia e sfiducia si legano a nuovi modi di comunicare la politica, in particolare su TikTok.
 
-                Vedrai 10 video tra quelli che i politici italiani hanno postato su TikTok durante la campagna elettorale per le Elezioni Europee del 2024. 
-                Ti chiediamo di giudicarli in base ad alcune caratteristiche, per ciascuna puoi esprimere un giudizio da 1 a 5 in base alle tue percezioni. I video sono selezionati in maniera totalmente casuale. 
+IMPORTANTE: Vedrai 10 video, selezionati in maniera totalmente casuale, tra quelli postati dai politici italiani durante la campagna elettorale per le Elezioni Europee dello scorso anno. Per ciascun video abbiamo preparato cinque frasi che potrebbero essere usate per descriverlo. Ti chiediamo di indicare con una scala da 1 a 5 (1 = per niente; 5= molto d’accordo) quanto sei d’accordo con quella affermazione in base alle tue percezioni. 
+Nel caso in cui quelle frasi non fossero adatte a descrivere quel video (siamo ancora in una fase di test) puoi indicare 1 nella scala come valutazione. 
 
-                Sappiamo che è difficile, ma ti chiediamo di mettere da parte (solo per questa volta) il tuo giudizio politico, le tue idee, e le tue simpatie.
-                Giudica esclusivamente il contenuto del video. È molto importante per noi.
+Sappiamo che è difficile, ma ti chiediamo di mettere da parte (solo per questa volta) il tuo giudizio personale sul politico e sul partito di riferimento, le tue idee, e le tue simpatie. Giudica esclusivamente il contenuto del video, come se lo guardassi senza conoscere chi vi è rappresentato. È molto importante per noi.
 
-                Sappiamo anche che è un lavoro ripetitivo e noioso, ma sappiamo anche che lo farai al meglio.
-                Per questo ti ringraziamo del tuo tempo. È molto importante per noi.
+Quello che ti chiediamo, in fondo, è uno scrolling un po’ più ragionato 😊
+
+In ogni caso, grazie mille per il tuo tempo!
                 """)
                 if st.button("Inizia il test"):
                     st.session_state.intro_shown = True
@@ -114,11 +113,11 @@ if participant_id:
                 else:
                     st.warning(f" Video `{video_filename}` non trovato su Drive.")
 
-                acc = st.slider("Il video è accurato nei contenuti (fornisce informazioni/dichiarazioni chiare e precise)", 1, 5, 1, key=f"acc_{i}")
-                aff = st.slider("Ritengo affidabile ciò che viene detto/rappresentato nel video", 1, 5, 1, key=f"aff_{i}")
-                aut = st.slider("Nel video, il/la protagonista o la fonte (se non c’è un/a protagonista evidente) appaiono autorevoli e competenti", 1, 5, 1, key=f"aut_{i}")
-                nat = st.slider("Nel video, il/la protagonista appaiono spontanei e naturali/Il contenuto è autentico e genuino (se non c'è un/a protagonista evidente)", 1, 5, 1, key=f"nat_{i}")
-                tec = st.slider("Il video è tecnicamente ben realizzato e adeguato al contesto social (buon uso del montaggio, contenuti interessanti)", 1, 5, 1, key=f"tec_{i}")
+                acc = st.slider("Il video è accurato nei contenuti, fornisce informazioni e/o dichiarazioni chiare e precise", 1, 5, 1, key=f"acc_{i}")
+                aff = st.slider("Ciò che viene detto e/o rappresentato nel video è affidabile e credibile ", 1, 5, 1, key=f"aff_{i}")
+                aut = st.slider("I/Le protagonisti/e e/o i contenuti del video trasmettono un senso di autorevolezza", 1, 5, 1, key=f"aut_{i}")
+                comp = st.slider("I/Le protagonisti/e e/o i contenuti del video danno impressione di competenza", 1, 5, 1, key=f"comp_{i}")
+                nat = st.slider("I/Le protagonisti/e appaiono spontanei e naturali e/o il contenuto è autentico e genuino", 1, 5, 1, key=f"nat_{i}")
 
                 colA, colB = st.columns([0.3, 0.7])
                 with colA:
@@ -135,8 +134,8 @@ if participant_id:
                             "Accuratezza": acc,
                             "Affidabilità": aff,
                             "Autorevolezza": aut,
-                            "Naturalezza": nat,
-                            "Tecnica": tec
+                            "Competenza": comp,
+                            "Naturalezza": nat
                         }
                         if len(st.session_state.responses) > i:
                             st.session_state.responses[i] = risposta
@@ -154,7 +153,7 @@ if participant_id:
                     "Sinistra",
                     "Non collocato/Preferisco non rispondere"
                 ]
-                political_choice = st.radio("Come ti collochi politicamente?", political_options)
+                political_choice = st.radio("Quale area politica è più vicina alle tue idee? (Qui sì, ti chiediamo un giudizio politico)", political_options)
 
                 if st.button(" Invia le risposte"):
                     df_out = pd.DataFrame(st.session_state.responses)
@@ -176,8 +175,8 @@ if participant_id:
                         row["Accuratezza"],
                         row["Affidabilità"],
                         row["Autorevolezza"],
+                        row["Competenza"],
                         row["Naturalezza"],
-                        row["Tecnica"],
                         political_choice
                     ] for row in st.session_state.responses]
                     worksheet.append_rows(values)
