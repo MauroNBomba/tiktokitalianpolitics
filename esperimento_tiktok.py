@@ -77,10 +77,10 @@ if participant_id:
                 st.markdown("""
                 Stiamo lavorando ad un progetto che vuole approfondire come i meccanismi di fiducia e sfiducia si legano a nuovi modi di comunicare la politica, in particolare su TikTok.
 
-IMPORTANTE: Vedrai 10 video, selezionati in maniera totalmente casuale, tra quelli postati dai politici italiani durante la campagna elettorale per le Elezioni Europee dello scorso anno. Per ciascun video abbiamo preparato cinque frasi che potrebbero essere usate per descriverlo. Ti chiediamo di indicare con una scala da 1 a 5 (1 = per niente; 5= molto d’accordo) quanto sei d’accordo con quella affermazione in base alle tue percezioni. 
-Nel caso in cui quelle frasi non fossero adatte a descrivere quel video (siamo ancora in una fase di test) puoi indicare 1 nella scala come valutazione. 
+Vedrai 10 video, selezionati in maniera totalmente casuale, tra quelli postati dai politici italiani durante la campagna elettorale per le Elezioni Europee dello scorso anno. Leggerai poi cinque frasi inerenti ai video,  ti chiediamo di valutarle da 1 a 5, dove 1 = per niente d'accordo e 5= molto d’accordo.  
+Nel caso in cui quelle frasi non fossero adatte a descrivere quel video (siamo ancora in una fase di test) puoi indicare 1 nella scala come valutazione.
 
-Sappiamo che è difficile, ma ti chiediamo di mettere da parte (solo per questa volta) il tuo giudizio personale sul politico e sul partito di riferimento, le tue idee, e le tue simpatie. Giudica esclusivamente il contenuto del video, come se lo guardassi senza conoscere chi vi è rappresentato. È molto importante per noi.
+IMPORTANTE: Sappiamo che è difficile, ma ti chiediamo di mettere da parte (solo per questa volta) il tuo giudizio personale sul politico e sul partito di riferimento, le tue idee, e le tue simpatie. Giudica esclusivamente il contenuto del video, come se lo guardassi senza conoscere chi vi è rappresentato. È molto importante per noi.
 
 Quello che ti chiediamo, in fondo, è uno scrolling un po’ più ragionato 😊
 
